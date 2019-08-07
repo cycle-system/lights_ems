@@ -418,18 +418,18 @@ class lightEmsEstimator(BaseEstimator):
             
             taPrediction= 25;
             
-            pvPower = np.zeros(pvDatasheetArray.shape[0]);
+            pvPower = np.zeros(self.pvDatasheetArray.shape[0]);
             pvEstimation = [];
             
-            for i in np.arange(0,pvDatasheetArray.shape[0],1):
+            for i in np.arange(0,self.pvDatasheetArray.shape[0],1):
                 
-                ga0 = pvDatasheetArray[i][0];
-                t0c = pvDatasheetArray[i][1];
-                pmMax0 = pvDatasheetArray[i][2];
-                imSc0 = pvDatasheetArray[i][3];
-                vmOc0 = pvDatasheetArray[i][4];
-                nSm = pvDatasheetArray[i][5];
-                nPm = pvDatasheetArray[i][6];
+                ga0 = self.pvDatasheetArray[i][0];
+                t0c = self.pvDatasheetArray[i][1];
+                pmMax0 = self.pvDatasheetArray[i][2];
+                imSc0 = self.pvDatasheetArray[i][3];
+                vmOc0 = self.pvDatasheetArray[i][4];
+                nSm = self.pvDatasheetArray[i][5];
+                nPm = self.pvDatasheetArray[i][6];
                 
                 pvPowerOneDay= self.__computePvPowerGeneration(predictions,taPrediction,ga0,t0c,pmMax0,imSc0,vmOc0,nSm,nPm);
                 pvPower[i]    = pvPowerOneDay[0];
