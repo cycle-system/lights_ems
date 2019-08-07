@@ -51,12 +51,11 @@ def oneDayPrediction(currentHour, GHI, a, b, g, R_input, Rules):
 
     predictions = np.zeros(p);
     X_aux = np.flip(yesterday);
+    X_in = np.zeros(a.shape[1]);
 
     for step in np.arange(0,h,1):
 
         i     = 0;
-        
-
         
         # Select the relevant inputs
 
