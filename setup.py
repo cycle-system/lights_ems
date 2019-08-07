@@ -16,6 +16,7 @@ setuptools.setup(
     install_requires=[
           'numpy',
 	  'scipy',
+	  'sympy',
 	  'scikit-learn==0.19'
       ],
     classifiers=[

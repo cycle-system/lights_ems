@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: lights-ems
+Version: 0.0.1
+Summary: A simple EMS based on rules for controlling the lights at Cycle's office
+Home-page: https://github.com/cycle-system/lights_ems
+Author: Cycle AI Team
+Author-email: ai@cyclesystem.org
+License: UNKNOWN
+Description: # lights_ems
+        Basic EMS for managing the lights a the office of Cycle.
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
