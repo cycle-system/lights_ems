@@ -43,15 +43,15 @@ def oneDayPrediction(currentHour, GHI, a, b, g, R_input, Rules):
     
     # Get prediction
     # Acumulate activation degree
-    W       = np.ones(Rules, dtype=np.float128);
+    w       = np.ones(Rules, dtype=np.float128);
     # Individual Activatio Degree
     mu      = np.zeros([Rules,n], dtype=np.float128);
 
     # Array of predictions
 
     predictions = np.zeros(p);
-    X_aux = np.flip(yesterday);
-    X_in = np.zeros(a.shape[1]);
+    xAux = np.flip(yesterday);
+    xIn = np.zeros(a.shape[1]);
 
     for step in np.arange(0,h,1):
 
@@ -59,25 +59,25 @@ def oneDayPrediction(currentHour, GHI, a, b, g, R_input, Rules):
         
         # Select the relevant inputs
 
-        D_in= np.isnan( X_aux*R_input );
+        dIn= np.isnan( xAux*R_input );
         for z in np.arange(0,p,1):
-            if D_in[z]  == False:
-                X_in [i] = X_aux [z];
+            if dIn[z]  == False:
+                xIn[i] = xAux[z];
                 i+=1;
                 
         for r in np.arange(0,Rules,1):
             for j in np.arange(0,n,1):
-                mu[r][j] = np.exp(-0.5*np.power(a[r][j]*(X_in[j]-b[r][j]),2)); 
-                W[r]     = W[r]*mu[r][j];
+                mu[r][j] = np.exp(-0.5*np.power(a[r][j]*(xIn[j]-b[r][j]),2)); 
+                w[r]     = w[r]*mu[r][j];
                 
-        if np.sum(W)==0:
-            Wn = W;
+        if np.sum(w)==0:
+            wn = w;
         else:
-            Wn = np.divide(W,np.sum(W));
+            wn = np.divide(w,np.sum(w));
 
-        xf = np.concatenate((1,X_in),axis=None);
+        xf = np.concatenate((1,xIn),axis=None);
         yr = np.dot(g,xf);  
-        predictValue = np.dot(Wn,yr);
+        predictValue = np.dot(wn,yr);
 
         if predictValue < 0:
             predictions[step] = 0;
@@ -86,130 +86,131 @@ def oneDayPrediction(currentHour, GHI, a, b, g, R_input, Rules):
 
         # Shape of X_aux is 24, -1 for getting the last index... 
 
-        X_aux = np.delete(X_aux,X_aux.shape[0]-1);
-        X_aux = np.transpose(np.array([np.append(predictions[step],X_aux)]));
+        xAux = np.delete(xAux,xAux.shape[0]-1);
+        xAux = np.transpose(np.array([np.append(predictions[step],xAux)]));
         
     return yesterday, today, predictions
     
 # PV Estimator
 
 # Inputs
-#    Ga: GHI [Numpy Array]
-#    Ta: Environment temperature [Numpy Array]  
-#    Ga_0,T0_c,PM_max0,IM_sc0,VM_oc0,N_sm,N_pm: Datasheet information
+#    ga: GHI [Numpy Array]
+#    ta: Environment temperature [Numpy Array]  
+#    ga0: Irradiation in standard conditions w/m2
+#    t0C: Cell temperature in standard conditions oC
+#    pmMax0: Maximun power of the module(watts)
+#    imSC0: Short circuit current of the module  (amperes)
+#    vmOC0: Open circuit voltage of the module   (Volts)  
+#    nSM: Numbers of cell in series  
+#    nPM: Numbers of cell in parallel 
 
 # Output
 
 #    pvPower: Output [Numpy Array]
 
-def pvPowerGeneration(ghiPrediction, taPrediction, Ga_0,T0_c,PM_max0,IM_sc0,VM_oc0,N_sm,N_pm) :
+def pvPowerGeneration(ghiPrediction, taPrediction, ga0,t0C,pmMax0,imSC0,vmOC0,nSM,nPM) :
     
     # GHI of the year
     
-    Ga = ghiPrediction;
-    Ta = taPrediction;
+    ga = ghiPrediction;
+    ta = taPrediction;
    
     # Initialization of model attributes
     
-    TC     = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    VCt_0  = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    voc_0  = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    FF     = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    rs     = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    RC_s   = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    IC_sc  = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    VC_oc  = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    VCt    = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    VMPP   = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    current= np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    x      = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    pvPower     = np.transpose(np.array([np.zeros(Ga.shape[0])]));
-    current= np.transpose(np.array([np.zeros(Ga.shape[0])]));
+    tc     = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    vct0  = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    voc0  = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    ff     = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    rs     = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    rcS   = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    icSC  = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    vcOC  = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    tVC    = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    vmpp   = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    xCurrent      = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    pvPower     = np.transpose(np.array([np.zeros(ga.shape[0])]));
+    current= np.transpose(np.array([np.zeros(ga.shape[0])]));
     
-    # Manufacturer's Information (Datasheet)
-
-    #Irradiation in standard conditions w/m2
-    Ga_0         = Ga_0;              
-    #Cell temperature in standard conditions oC
-    T0_c         = T0_c;           
-    # Maximun power of the module   (watts)
-    PM_max0      = PM_max0;          
-    # Short circuit current of the module  (amperes)
-    IM_sc0       = IM_sc0; 
-    #Open circuit voltage of the module   (Volts)  
-    VM_oc0       = VM_oc0; 
-    #Numbers of cell in series  
-    N_sm         = N_sm;  
-    #Numbers of cell in parallel 
-    N_pm         = N_pm;         
+    # Manufacturer's Information (Datasheet)        
     
     #Constant Parameters
     
     # Cm2/w
-    C2           = 0.03;   
+    c2           = 0.03;   
     # mv/C
-    C3           = -2.3e-3;  
+    c3           = -2.3e-3;  
     # Electron charge
     e            = 1.602e-19; 
     # Boltzmann constant 
     k            = 1.381e-23;     
     # correction factor or idealising factor
-    m            = 1;
+    correction            = 1;
+    
+    #Calculated parameters for cells 
+    # Maximum power per cell
+    pcMax0      = pmMax0/(nSM*nPM);  
+    # Short circuit current per cell
+    icSC0       = imSC0 / nPM;    
+    # Open circuit voltage per cell
+    vcOC0       = vmOC0 / nSM;          
+    # Fill Factor 
+    ff0          = pcMax0 /(vcOC0*icSC0); 
+    c1           = icSC0 / ga0 ;
     
     # Equation to optimize
     
-    def f(x):
-        return (N_pm*IC_sc[i]*(1-(np.exp((VMPP[i]-(N_sm*VC_oc[i])+((x*RC_s[i]*N_sm)/N_pm))/(N_sm*VCt[i]))))-x)
+    def f(xCurrent):
+        return (nPM*icSC[i]*(1-(np.exp((vmpp[i]-(nSM*vcOC[i])+((xCurrent*rcS[i]*nSM)/nPM))/(nSM*tVC[i]))))-xCurrent)
     
-    for i in np.arange(0,Ga.shape[0],1):
+    for i in np.arange(0,ga.shape[0],1):
 
         # Absolut Cell temperature
-        TC        [i]  = Ta+C2*Ga[i];
+        tc        [i]  = ta+c2*ga[i];
         # Thermal Voltage
-        VCt_0     [i]  = np.divide((m*k*TC[i]),e);                                   
-        voc_0     [i]  = VC_oc0/VCt_0 [i];
+        vct0     [i]  = np.divide((correction*k*tc[i]),e);                                   
+        voc0     [i]  = vcOC0/vct0 [i];
         # Fill Factor
-        FF        [i]  = (voc_0[i]-np.log(voc_0[i]+0.72))/(voc_0[i]+1);   
-        rs        [i]  = 1 - (FF[i]/FF0);
+        ff        [i]  = (voc0[i]-np.log(voc0[i]+0.72))/(voc0[i]+1);   
+        rs        [i]  = 1 - (ff[i]/ff0);
         #Equivalent serial resistance
-        RC_s      [i]  = (rs[i]*VC_oc0)/IC_sc0; 
+        rcS      [i]  = (rs[i]*vcOC0)/icSC0; 
         #Short circuit current
-        IC_sc     [i]  = C1*Ga[i];  
+        icSC     [i]  = c1*ga[i];  
         #Open circuit voltage
-        VC_oc     [i]  = VC_oc0 + C3*(TC[i]-T0_c); 
+        vcOC     [i]  = vcOC0 + c3*(tc[i]-t0C); 
         #Thermal voltage of the single solar cell
-        VCt       [i]  = np.divide((m*k*(273+TC[i])),e);                             
-        VMPP      [i]  = VC_oc[i]*N_sm*0.8;
+        tVC       [i]  = np.divide((correction*k*(273+tc[i])),e);                             
+        vmpp      [i]  = vcOC[i]*nSM*0.8;
     
         #PV Current
         current [i]  = fsolve(f, 0.1)
         #PV Power
-        pvPower[i]  = current[i]*VMPP[i]; 
+        pvPower[i]  = current[i]*vmpp[i]; 
  
     return pvPower
     
 # EMS to decide the Energy Mixer command
     
-def lightsEMS(voltageBatteries, powerLoads, initialSoc, Cn, PV):
+def lightsEMS(voltageBatteries, powerLoads, initialSoc, cn, pv):
 
     # Noise level (W)
-    PN = 25;
+    pn = 25;
     # SoC state
-    SoC = initialSoc
+    soc = initialSoc
     # Sampling time
-    Ts = 1;
+    ts = 1;
     # Get power of Load
-    PL = max(powerLoads);
+    pl = max(powerLoads);
     
     # EB Definition
-    EB = np.zeros(3);
+    eb = np.zeros(3);
     
-    for i in np.arange(0,EB.shape[0],1):
-        EB[i] = Cn[i]*SoC[i];
+    for i in np.arange(0,eb.shape[0],1):
+        eb[i] = cn[i]*soc[i];
 
     # Get the battery with Max initial SoC and Voltage
         
-    indexMaxSoc = np.where(SoC == max(SoC))[0];
+    indexMaxSoc = np.where(soc == max(soc))[0];
     voltageMaxSoc = 0;
 
     for index in indexMaxSoc:
@@ -244,28 +245,27 @@ def lightsEMS(voltageBatteries, powerLoads, initialSoc, Cn, PV):
     
     # EB Evolution with PV Power (Default)
     
-    for i in np.arange(0,SoC.shape[0],1):
-        if SoC[i] < 100:
-            EB[i] = Cn[i]*SoC[i] + Ts*PV[i];
+    for i in np.arange(0,soc.shape[0],1):
+        if soc[i] < 100:
+            eb[i] = cn[i]*soc[i] + ts*pv[i];
     
     # Detect if Load is active and change EB evolution
     
-    if PL > PN :
+    if pl > pn :
             
-        EB[indexMaxVoltageSoc] = Cn[i]*SoC[indexMaxVoltageSoc] - Ts*PL;
+        eb[indexMaxVoltageSoc] = cn[i]*soc[indexMaxVoltageSoc] - ts*pl;
         
-    SoC = np.divide(EB,Cn);
+    soc = np.divide(eb,cn);
     
     # Protection to avoid unreal SoC values
     
-    for i in np.arange(0,SoC.shape[0],1):
-        if SoC[i] > 1:
-            SoC[i] = 1; 
-        if SoC[i] < 0:
-            SoC[i] = 0;
+    for i in np.arange(0,soc.shape[0],1):
+        if soc[i] > 1:
+            soc[i] = 1; 
+        if soc[i] < 0:
+            soc[i] = 0;
     
-    return emCommand, SoC
-
+    return emCommand, soc
 
 """
 EMS for light Controller 
