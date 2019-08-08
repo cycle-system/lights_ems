@@ -8,7 +8,6 @@ import numpy as np
 import math 
 import pdb
 from math import *
-from matplotlib import pyplot as plt
 from scipy import linalg
 from sympy import symbols, solve
 import sympy as sp
@@ -466,8 +465,8 @@ class lightEmsEstimator(BaseEstimator):
             y_reg.append(emCommand);
             y_reg.append(pvEstimation);
             y_reg.append(self.soc);
-            y_reg.append(yesterday);
-            y_reg.append(today);
+            y_reg.append(yesterday.tolist());
+            y_reg.append(today.tolist());
             
             # Append sub result to output vector
             
