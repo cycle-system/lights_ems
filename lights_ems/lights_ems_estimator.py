@@ -346,23 +346,13 @@ class lightEmsEstimator(BaseEstimator):
         # Check input and target vectors correctness
         # ToDo
         
-        # Initialization values for SoC
+        # Initial value for initialization flag
         
-        for x in X :
-            
-            self.soc=np.zeros(len(x[0]));
-
-            for i in np.arange(0,len(x[0]),1):
-                if x[0][i] <= 11:
-                    self.soc[i]=0;
-                elif x[0][i]>=13.8:
-                    self.soc[i]=1; 
-                else:
-                    self.soc[i]= 0.35714*x[0][i]-3.92857;
+        self.isInitialized_ = False;
         
         # Configure parameters when fitted
         
-        self.isFitted_ = True
+        self.isFitted_ = True;
         
         # `fit` should always return `self`
         return self
@@ -409,6 +399,27 @@ class lightEmsEstimator(BaseEstimator):
         # Perform the prediction over the input array
         
         for x in X :
+            
+            # Define the first value of SoC, only the first time
+            
+            if(not self.isInitialized_):
+                
+                # Initialization values for SoC
+        
+                for x in X :
+
+                    self.soc=np.zeros(len(x[0]));
+
+                    for i in np.arange(0,len(x[0]),1):
+                        if x[0][i] <= 11:
+                            self.soc[i]=0;
+                        elif x[0][i]>=13.8:
+                            self.soc[i]=1; 
+                        else:
+                            self.soc[i]= 0.35714*x[0][i]-3.92857;
+                
+                self.isInitialized_ = True;            
+                
             
             # Define a vector of results
             
