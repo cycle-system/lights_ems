@@ -8,7 +8,6 @@ import numpy as np
 import math 
 import pdb
 from math import *
-from matplotlib import pyplot as plt
 from scipy import linalg
 from sympy import symbols, solve
 import sympy as sp
@@ -346,23 +345,13 @@ class lightEmsEstimator(BaseEstimator):
         # Check input and target vectors correctness
         # ToDo
         
-        # Initialization values for SoC
+        # Initial value for initialization flag
         
-        for x in X :
-            
-            self.soc=np.zeros(len(x[0]));
-
-            for i in np.arange(0,len(x[0]),1):
-                if x[0][i] <= 11:
-                    self.soc[i]=0;
-                elif x[0][i]>=13.8:
-                    self.soc[i]=1; 
-                else:
-                    self.soc[i]= 0.35714*x[0][i]-3.92857;
+        self.isInitialized_ = False;
         
         # Configure parameters when fitted
         
-        self.isFitted_ = True
+        self.isFitted_ = True;
         
         # `fit` should always return `self`
         return self
@@ -410,6 +399,27 @@ class lightEmsEstimator(BaseEstimator):
         
         for x in X :
             
+            # Define the first value of SoC, only the first time
+            
+            if(not self.isInitialized_):
+                
+                # Initialization values for SoC
+        
+                for x in X :
+
+                    self.soc=np.zeros(len(x[0]));
+
+                    for i in np.arange(0,len(x[0]),1):
+                        if x[0][i] <= 11:
+                            self.soc[i]=0;
+                        elif x[0][i]>=13.8:
+                            self.soc[i]=1; 
+                        else:
+                            self.soc[i]= 0.35714*x[0][i]-3.92857;
+                
+                self.isInitialized_ = True;            
+                
+            
             # Define a vector of results
             
             y_reg = [];
@@ -455,8 +465,8 @@ class lightEmsEstimator(BaseEstimator):
             y_reg.append(emCommand);
             y_reg.append(pvEstimation);
             y_reg.append(self.soc);
-            y_reg.append(yesterday);
-            y_reg.append(today);
+            y_reg.append(yesterday.tolist());
+            y_reg.append(today.tolist());
             
             # Append sub result to output vector
             
