@@ -187,7 +187,7 @@ def pvPowerGeneration(ghiPrediction, taPrediction, ga0,t0C,pmMax0,imSC0,vmOC0,nS
         #PV Power
         pvPower[i]  = current[i]*vmpp[i]; 
  
-    return pvPower
+    return pvPower 
     
 # EMS to decide the Energy Mixer command
     
@@ -215,10 +215,12 @@ def lightsEMS(voltageBatteries, powerLoads, initialSoc, cn, pv):
 
     for index in indexMaxSoc:
         voltageMaxSoc = max(voltageMaxSoc, voltageBatteries[index]);
-        
-    indexMaxVoltageSoc = np.where(voltageBatteries == voltageMaxSoc)[0][0];
     
+    indexMaxVoltageSoc = voltageBatteries.index(voltageMaxSoc);
+
     # Configure Energy Mixer command
+    
+    emCommand = None;
     
     if indexMaxVoltageSoc == 0:
         emCommand = {
@@ -240,7 +242,7 @@ def lightsEMS(voltageBatteries, powerLoads, initialSoc, cn, pv):
         "house 2" : [0,0],
         "house 3" : [1,0],
         }
-    
+
     emCommand = json.dumps(emCommand)
     
     # EB Evolution with PV Power (Default)
@@ -270,6 +272,10 @@ def lightsEMS(voltageBatteries, powerLoads, initialSoc, cn, pv):
 """
 EMS for light Controller 
 """
+
+from sklearn.base import BaseEstimator
+from sklearn.utils.validation import check_is_fitted
+import inspect
 
 class lightEmsEstimator(BaseEstimator):
     
@@ -312,25 +318,29 @@ class lightEmsEstimator(BaseEstimator):
     def fit(self, X, y = None):
         
         """
-        Implementation of a fitting function. This section could help when needed to
-        tune the rww parameter of SoC or other necessary.
-        
         Features per row
         ----------
-        X[0] -> List, v_bat - Present measure of voltage in the battery terminals
+        X[0] -> List, vBat - Present measure of voltage in the battery terminals
+        X[1] -> List, powerLoads - Present measure of Load 
+        X[2] -> int, currentHour - Present hour 
         
+        Outputs
+        ----------
+        y[0] -> json, emCommand - switching Command 
+        y[1] -> np.array, pvEstimation - Estimation for the next 24 hours 
+        y[2] -> np.array, soc - SoC for each battery 
+        y[3] -> np.array, yesterday - measures 24 hours before of GHI 
+        y[4] -> np.array, today - measures for today of GHI
+             
         Parameters
         ----------
         X : {array-like, sparse matrix}, shape (n_samples, n_features)
             The training input samples.
-        y : array-like, shape (n_samples, n_outputs)
-            The target values (class labels in classification, real numbers in
-            regression).
             
         Returns
         -------
-        self : object
-            Returns self.
+        y : ndarray, shape (n_samples, n_outputs)
+            Returns an array of predictions
         """
         
         # Check input and target vectors correctness
@@ -340,15 +350,15 @@ class lightEmsEstimator(BaseEstimator):
         
         for x in X :
             
-            self.soc=np.zeros(x.shape[0]);
+            self.soc=np.zeros(len(x[0]));
 
-            for i in np.arange(0,x.shape[0],1):
-                if x[i] <= 11:
+            for i in np.arange(0,len(x[0]),1):
+                if x[0][i] <= 11:
                     self.soc[i]=0;
-                elif x[i]>=13.8:
+                elif x[0][i]>=13.8:
                     self.soc[i]=1; 
                 else:
-                    self.soc[i]= 0.35714*x[i]-3.92857;
+                    self.soc[i]= 0.35714*x[0][i]-3.92857;
         
         # Configure parameters when fitted
         
@@ -438,7 +448,7 @@ class lightEmsEstimator(BaseEstimator):
                     
             # step 3: EMS for Lights
             
-            emCommand, self.soc = self.__computeLightsEMS(vBat, powerLoads,pvPower)
+            emCommand, self.soc = self.__computeLightsEMS(vBat,powerLoads,pvPower)
             
             # Append results to output vector
             
