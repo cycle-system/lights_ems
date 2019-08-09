@@ -267,7 +267,7 @@ def lightsEMS(voltageBatteries, powerLoads, initialSoc, cn, pv):
             soc[i] = 0;
     
     return emCommand, soc
-
+    
 """
 EMS for light Controller 
 """
@@ -319,17 +319,17 @@ class lightEmsEstimator(BaseEstimator):
         """
         Features per row
         ----------
-        X[0] -> List, vBat - Present measure of voltage in the battery terminals
-        X[1] -> List, powerLoads - Present measure of Load 
+        X[0] -> list, vBat - Present measure of voltage in the battery terminals
+        X[1] -> list, powerLoads - Present measure of Load 
         X[2] -> int, currentHour - Present hour 
         
         Outputs
         ----------
-        y[0] -> json, emCommand - switching Command 
-        y[1] -> np.array, pvEstimation - Estimation for the next 24 hours 
-        y[2] -> np.array, soc - SoC for each battery 
-        y[3] -> np.array, yesterday - measures 24 hours before of GHI 
-        y[4] -> np.array, today - measures for today of GHI
+        y[0] -> json str, emCommand - switching Command 
+        y[1] -> list, pvEstimation - Estimation for the next 24 hours 
+        y[2] -> list, soc - SoC for each battery 
+        y[3] -> list, yesterday - measures 24 hours before of GHI 
+        y[4] -> list, today - measures for today of GHI
              
         Parameters
         ----------
@@ -364,17 +364,17 @@ class lightEmsEstimator(BaseEstimator):
         
         Features per row
         ----------
-        X[0] -> List, vBat - Present measure of voltage in the battery terminals
-        X[1] -> List, powerLoads - Present measure of Load 
+        X[0] -> str, vBat - Present measure of voltage in the battery terminals, values separated by ','
+        X[1] -> str, powerLoads - Present measure of Load 
         X[2] -> int, currentHour - Present hour 
         
         Outputs
         ----------
-        y[0] -> json, emCommand - switching Command 
-        y[1] -> np.array, pvEstimation - Estimation for the next 24 hours 
-        y[2] -> np.array, soc - SoC for each battery 
-        y[3] -> np.array, yesterday - measures 24 hours before of GHI 
-        y[4] -> np.array, today - measures for today of GHI
+        y[0] -> json str, emCommand - switching Command 
+        y[1] -> list, pvEstimation - Estimation for the next 24 hours 
+        y[2] -> list, soc - SoC for each battery 
+        y[3] -> list, yesterday - measures 24 hours before of GHI 
+        y[4] -> list, today - measures for today of GHI
              
         Parameters
         ----------
@@ -399,6 +399,19 @@ class lightEmsEstimator(BaseEstimator):
         
         for x in X :
             
+            # Define a vector of results
+            
+            y_reg = [];
+            
+            # Extract the values of the input array
+            
+            vBat = []
+            powerLoads = []
+            
+            vBat = [float(i) for i in x[0].split(",")];
+            powerLoads = [float(i) for i in x[1].split(",")];
+            currentHour = int(x[2]); 
+            
             # Define the first value of SoC, only the first time
             
             if(not self.isInitialized_):
@@ -407,28 +420,17 @@ class lightEmsEstimator(BaseEstimator):
         
                 for x in X :
 
-                    self.soc=np.zeros(len(x[0]));
+                    self.soc=np.zeros(len(vBat));
 
-                    for i in np.arange(0,len(x[0]),1):
-                        if x[0][i] <= 11:
+                    for i in np.arange(0,len(vBat),1):
+                        if vBat[i] <= 11:
                             self.soc[i]=0;
-                        elif x[0][i]>=13.8:
+                        elif vBat[i]>=13.8:
                             self.soc[i]=1; 
                         else:
-                            self.soc[i]= 0.35714*x[0][i]-3.92857;
+                            self.soc[i]= 0.35714*vBat[i]-3.92857;
                 
                 self.isInitialized_ = True;            
-                
-            
-            # Define a vector of results
-            
-            y_reg = [];
-            
-            # Extract the values of the input array
-            
-            vBat = x[0];
-            powerLoads = x[1];
-            currentHour = x[2];
             
             # step 1: get GHI predictions for one day ahead
             
@@ -464,7 +466,7 @@ class lightEmsEstimator(BaseEstimator):
             
             y_reg.append(emCommand);
             y_reg.append(pvEstimation);
-            y_reg.append(self.soc);
+            y_reg.append(self.soc.tolist());
             y_reg.append(yesterday.tolist());
             y_reg.append(today.tolist());
             
