@@ -272,10 +272,6 @@ def lightsEMS(voltageBatteries, powerLoads, initialSoc, cn, pv):
 EMS for light Controller 
 """
 
-from sklearn.base import BaseEstimator
-from sklearn.utils.validation import check_is_fitted
-import inspect
-
 class lightEmsEstimator(BaseEstimator):
     
     """ 
@@ -316,12 +312,19 @@ class lightEmsEstimator(BaseEstimator):
 
     def fit(self, X, y = None):
         
-        """
+        """ 
+        Implementation of a predicting function. To take decissions about our Energy
+        Mixer
+        
         Features per row
         ----------
-        X[0] -> list, vBat - Present measure of voltage in the battery terminals
-        X[1] -> list, powerLoads - Present measure of Load 
-        X[2] -> int, currentHour - Present hour 
+        X[0] -> float, vBat - Present measure of voltage in the battery terminals
+        X[1] -> float, vBat - Present measure of voltage in the battery terminals
+        X[2] -> float, vBat - Present measure of voltage in the battery terminals
+        X[3] -> float, powerLoads - Present measure of Load 
+        X[4] -> float, powerLoads - Present measure of Load 
+        X[5] -> float, powerLoads - Present measure of Load 
+        X[6] -> int, currentHour - Present hour 
         
         Outputs
         ----------
@@ -359,14 +362,18 @@ class lightEmsEstimator(BaseEstimator):
     def predict(self, X, y = None):
         
         """ 
-        Implementation of a predicting function. With input features estimate
-        the value of reference power for batteries.
+        Implementation of a predicting function. To take decissions about our Energy
+        Mixer
         
         Features per row
         ----------
-        X[0] -> str, vBat - Present measure of voltage in the battery terminals, values separated by ','
-        X[1] -> str, powerLoads - Present measure of Load 
-        X[2] -> int, currentHour - Present hour 
+        X[0] -> float, vBat - Present measure of voltage in the battery terminals
+        X[1] -> float, vBat - Present measure of voltage in the battery terminals
+        X[2] -> float, vBat - Present measure of voltage in the battery terminals
+        X[3] -> float, powerLoads - Present measure of Load 
+        X[4] -> float, powerLoads - Present measure of Load 
+        X[5] -> float, powerLoads - Present measure of Load 
+        X[6] -> int, currentHour - Present hour 
         
         Outputs
         ----------
@@ -408,9 +415,19 @@ class lightEmsEstimator(BaseEstimator):
             vBat = []
             powerLoads = []
             
-            vBat = [float(i) for i in x[0].split(",")];
-            powerLoads = [float(i) for i in x[1].split(",")];
-            currentHour = int(x[2]); 
+            # Organize in a vector the voltage input
+            
+            vBat.append(x[0]);
+            vBat.append(x[1]);
+            vBat.append(x[2]);
+            
+            # Organize in a vector the loads input
+            
+            powerLoads.append(x[3]);
+            powerLoads.append(x[4]);
+            powerLoads.append(x[5]);
+            
+            currentHour = int(x[6]); 
             
             # Define the first value of SoC, only the first time
             
