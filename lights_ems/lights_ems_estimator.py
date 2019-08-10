@@ -481,11 +481,13 @@ class lightEmsEstimator(BaseEstimator):
             
             # Append results to output vector
             
-            y_reg.append(emCommand);
-            y_reg.append(pvEstimation);
-            y_reg.append(self.soc.tolist());
-            y_reg.append(yesterday.tolist());
-            y_reg.append(today.tolist());
+            #y_reg.append(emCommand);
+            #y_reg.append(pvEstimation);
+            #y_reg.append(self.soc.tolist());
+            #y_reg.append(yesterday.tolist());
+            #y_reg.append(today.tolist());
+            
+            y_reg.append(0.0)
             
             # Append sub result to output vector
             
