@@ -41,10 +41,6 @@ def oneDayPrediction(currentHour, GHI, a, b, g, R_input, Rules):
     today =  GHI[currentHour:currentHour+p]
     
     # Get prediction
-    # Acumulate activation degree
-    w       = np.ones(Rules, dtype=np.float128);
-    # Individual Activatio Degree
-    mu      = np.zeros([Rules,n], dtype=np.float128);
 
     # Array of predictions
 
@@ -55,6 +51,10 @@ def oneDayPrediction(currentHour, GHI, a, b, g, R_input, Rules):
     for step in np.arange(0,h,1):
 
         i     = 0;
+        # Acumulate activation degree
+		w       = np.ones(Rules, dtype=np.float128);
+		# Individual Activatio Degree
+		mu      = np.zeros([Rules,n], dtype=np.float128);
         
         # Select the relevant inputs
 
