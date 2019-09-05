@@ -52,9 +52,9 @@ def oneDayPrediction(currentHour, GHI, a, b, g, R_input, Rules):
 
         i     = 0;
         # Acumulate activation degree
-		w       = np.ones(Rules, dtype=np.float128);
+		w = np.ones(Rules, dtype=np.float128);
 		# Individual Activatio Degree
-		mu      = np.zeros([Rules,n], dtype=np.float128);
+		mu = np.zeros([Rules,n], dtype=np.float128);
         
         # Select the relevant inputs
 
